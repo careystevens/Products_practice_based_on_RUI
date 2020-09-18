@@ -84,20 +84,27 @@ int GPS_get_data(double* latitude,double* longitude,int16_t* altitude)
 	uint8_t gpio_status;
 	double latitude_tmp, longitude_tmp = 0;
 	gps_timeout_flag = false;
-	GpsStart();																		
-	rui_timer_init( &Gps_Cnt_Timer, Gps_Timeout_Event ); 
-	rui_timer_setvalue( &Gps_Cnt_Timer, user_store_data.gps_timeout_cnt * 1000 );  
-	RUI_LOG_PRINTF("Start Search Satellite(about %d seconds) ...\r\n",user_store_data.gps_timeout_cnt);
-	rui_timer_start(&Gps_Cnt_Timer); //start search satellite timer
+	if(!HasFix){
+		GpsStart();
 
-	while((gps_timeout_flag == false) && !HasFix)
-	{
-		/***************************************************************************
-		 * wait for searching satellite
-		****************************************************************************/
-		rui_running();  
-	};
-	rui_timer_stop(&Gps_Cnt_Timer);  //stop search satellite timer
+		rui_timer_init( &Gps_Cnt_Timer, Gps_Timeout_Event ); 
+		rui_timer_setvalue( &Gps_Cnt_Timer, user_store_data.gps_timeout_cnt * 1000 );  
+		RUI_LOG_PRINTF("Start Search Satellite(about %d seconds) ...\r\n",user_store_data.gps_timeout_cnt);
+		rui_timer_start(&Gps_Cnt_Timer); //start search satellite timer
+
+		while((gps_timeout_flag == false) && !HasFix)
+		{
+			/***************************************************************************
+			* wait for searching satellite
+			****************************************************************************/
+			rui_running();  
+		};
+		rui_timer_stop(&Gps_Cnt_Timer);  //stop search satellite timer
+	} else {
+		RUI_LOG_PRINTF("Has fix already:");
+	}
+																			
+
 
 	if(HasFix)	
 	{
